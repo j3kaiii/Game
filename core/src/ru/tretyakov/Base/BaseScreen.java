@@ -42,7 +42,6 @@ public abstract class BaseScreen implements Screen, InputProcessor {
 
     @Override
     public void dispose() {
-        System.out.println("dispose");
         batch.dispose();
     }
 
