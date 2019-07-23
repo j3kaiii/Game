@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
 import ru.tretyakov.math.Rect;
+import ru.tretyakov.utils.Regions;
 
 public abstract class Sprite extends Rect {
 
@@ -16,7 +17,10 @@ public abstract class Sprite extends Rect {
     public Sprite(TextureRegion region) {
         this.regions = new TextureRegion[1];
         this.regions[0] = region;
-        setHeightProportion(0.3f);
+    }
+
+    public Sprite(TextureRegion region, int rows, int cols, int frames) {
+        this.regions = Regions.split(region, rows, cols, frames);
     }
 
     public void setHeightProportion(float height) {
