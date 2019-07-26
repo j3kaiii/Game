@@ -13,20 +13,23 @@ import com.badlogic.gdx.math.Vector2;
 import ru.tretyakov.base.BaseScreen;
 import ru.tretyakov.math.Rect;
 import ru.tretyakov.pool.BulletPool;
+import ru.tretyakov.pool.EnemyPool;
 import ru.tretyakov.sprite.Background;
 import ru.tretyakov.sprite.MainShip;
 import ru.tretyakov.sprite.Star;
+import ru.tretyakov.utils.EnemyGenerator;
 
 public class GameScreen extends BaseScreen {
 
     private static final int STAR_COUNT = 64;
 
-    Rect worldBounds;
     private TextureAtlas atlas;
     private Texture bg;
     private Background background;
 
     private BulletPool bulletPool;
+    private EnemyPool enemyPool;
+    private EnemyGenerator enemyGenerator;
 
     private Star[] starArray;
     private MainShip mainShip;
@@ -47,6 +50,8 @@ public class GameScreen extends BaseScreen {
             starArray[i] = new Star(atlas);
         }
         bulletPool = new BulletPool();
+        enemyPool = new EnemyPool(bulletPool, worldBounds);
+        enemyGenerator = new EnemyGenerator(enemyPool, atlas, worldBounds);
         mainShip = new MainShip(atlas, bulletPool);
     }
 
@@ -76,6 +81,7 @@ public class GameScreen extends BaseScreen {
         atlas.dispose();
         bg.dispose();
         bulletPool.dispose();
+        enemyPool.dispose();
         super.dispose();
     }
 
@@ -84,11 +90,14 @@ public class GameScreen extends BaseScreen {
             s.update(delta);
         }
         bulletPool.updateActiveSprites(delta);
+        enemyPool.updateActiveSprites(delta);
         mainShip.update(delta);
+        enemyGenerator.generate(delta);
     }
 
     private void freeAllDestroyedActiveSprites() {
         bulletPool.freeAllDestroyedActiveSprites();
+        enemyPool.freeAllDestroyedActiveSprites();
     }
 
     public void draw() {
@@ -100,6 +109,7 @@ public class GameScreen extends BaseScreen {
             s.draw(batch);
         }
         bulletPool.drawActiveSprites(batch);
+        enemyPool.drawActiveSprites(batch);
         mainShip.draw(batch);
         batch.end();
     }
