@@ -2,11 +2,13 @@ package ru.tretyakov.screen;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.audio.Music;
 
 import ru.tretyakov.base.BaseScreen;
 import ru.tretyakov.math.Rect;
@@ -29,14 +31,18 @@ public class MenuScreen extends BaseScreen {
     private Background background;
 
     private Star[] starArray;
+    private Music music;
 
     public MenuScreen(Game game) {
         this.game = game;
+        music = Gdx.audio.newMusic(Gdx.files.internal("sounds/music.mp3"));
+        music.setLooping(true);
     }
 
     @Override
     public void show() {
         super.show();
+        music.play();
         atlas = new TextureAtlas("textures/menuAtlas.tpack");
         bg = new Texture("textures/bg.png");
         background = new Background(new TextureRegion(bg));
@@ -68,6 +74,7 @@ public class MenuScreen extends BaseScreen {
     @Override
     public void dispose() {
         atlas.dispose();
+        music.dispose();
         super.dispose();
         bg.dispose();
     }
