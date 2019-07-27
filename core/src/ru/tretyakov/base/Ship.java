@@ -15,8 +15,8 @@ public abstract class Ship extends Sprite {
     protected Rect worldBounds;
     protected BulletPool bulletPool;
 
-    protected Vector2 direction;
-    protected Vector2 speed;
+    protected Vector2 v;
+    protected Vector2 v0;
     protected Vector2 bulletV;
 
     protected float reloadInterval;
@@ -40,17 +40,7 @@ public abstract class Ship extends Sprite {
         this.worldBounds = worldBounds;
     }
 
-    @Override
-    public void update(float delta) {
-        pos.mulAdd(direction, delta);
-        reloadTimer += delta;
-        if (reloadTimer >= reloadInterval) {
-            reloadTimer = 0;
-            shoot();
-        }
-    }
-
-    private void shoot() {
+    public void shoot() {
         Bullet bullet = bulletPool.obtain();
         bullet.set(this,bulletRegion, pos, bulletV, bulletHeight, worldBounds, damage);
         laser.play();
@@ -59,5 +49,10 @@ public abstract class Ship extends Sprite {
     @Override
     public void dispose() {
         laser.dispose();
+    }
+
+    public void setDamage(Bullet bullet) {
+        hp -= bullet.getDamage();
+        System.out.println(getClass().getName() + " hp " + hp);
     }
 }

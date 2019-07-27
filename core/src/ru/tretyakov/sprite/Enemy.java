@@ -10,27 +10,49 @@ import ru.tretyakov.pool.BulletPool;
 
 public class Enemy extends Ship {
 
+    private enum State {DESCENT, FIGHT}
+    private State state;
+
+    private Vector2 descentV = new Vector2(0, -0.15f);
+
     private MainShip mainShip;
 
     public Enemy(BulletPool bulletPool, Rect worldBounds) {
         this.bulletPool = bulletPool;
         this.worldBounds = worldBounds;
         laser = Gdx.audio.newSound(Gdx.files.internal("sounds/bullet.wav"));
-        direction = new Vector2();
-        speed = new Vector2();
+        v = new Vector2();
+        v0 = new Vector2();
         bulletV = new Vector2();
+        state = State.DESCENT;
     }
 
     @Override
     public void update(float delta) {
-        super.update(delta);
-        if (getBottom() < worldBounds.getBottom()) {
-            destroy();
+        pos.mulAdd(v, delta);
+        switch (state) {
+            case DESCENT:
+                if (getTop() <= worldBounds.getTop()) {
+                    v.set(v0);
+                    state = State.FIGHT;
+                }
+                break;
+            case FIGHT:
+                reloadTimer += delta;
+                if (reloadTimer >= reloadInterval) {
+                    reloadTimer = 0;
+                    shoot();
+                }
+                if (getBottom() < worldBounds.getBottom()) {
+                    destroy();
+                }
+                break;
         }
+        if (hp < 0) destroy();
     }
 
     public void set(TextureRegion[] regions,
-                    Vector2 direction,
+                    Vector2 v0,
                     TextureRegion bulletRegion,
                     float bulletHeight,
                     float bulletVY,
@@ -39,7 +61,7 @@ public class Enemy extends Ship {
                     float height,
                     int hp) {
         this.regions = regions;
-        this.direction = direction;
+        this.v0.set(v0);
         this.bulletRegion = bulletRegion;
         this.bulletHeight = bulletHeight;
         this.bulletV.set(0, bulletVY);
@@ -47,7 +69,8 @@ public class Enemy extends Ship {
         this.reloadInterval = reloadInterval;
         setHeightProportion(height);
         this.hp = hp;
-        speed.set(direction);
+        v.set(descentV);
         reloadTimer = reloadInterval;
+        state = State.DESCENT;
     }
 }

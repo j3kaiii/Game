@@ -10,11 +10,16 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.List;
+
 import ru.tretyakov.base.BaseScreen;
+import ru.tretyakov.base.Sprite;
 import ru.tretyakov.math.Rect;
 import ru.tretyakov.pool.BulletPool;
 import ru.tretyakov.pool.EnemyPool;
 import ru.tretyakov.sprite.Background;
+import ru.tretyakov.sprite.Bullet;
+import ru.tretyakov.sprite.Enemy;
 import ru.tretyakov.sprite.MainShip;
 import ru.tretyakov.sprite.Star;
 import ru.tretyakov.utils.EnemyGenerator;
@@ -59,6 +64,7 @@ public class GameScreen extends BaseScreen {
     public void render(float delta) {
         super.render(delta);
         update(delta);
+        checkCollisions();
         freeAllDestroyedActiveSprites();
         draw();
     }
@@ -93,6 +99,22 @@ public class GameScreen extends BaseScreen {
         enemyPool.updateActiveSprites(delta);
         mainShip.update(delta);
         enemyGenerator.generate(delta);
+    }
+
+    private void checkCollisions() {
+        List<Enemy> enemies = enemyPool.getActiveObjects();
+        List<Bullet> bullets = bulletPool.getActiveObjects();
+        for (int i = 0; i < enemies.size(); i++) {
+            for (int j = 0; j < bullets.size(); j++) {
+                if (!enemies.get(i).isOutside(mainShip)) {
+                    enemies.get(i).destroy();
+                } else if (bullets.get(j).getOwner() == mainShip && !bullets.get(j).isOutside(enemies.get(i))) {
+                    enemies.get(i).setDamage(bullets.get(j));
+                    bullets.get(j).destroy();
+                }
+            }
+
+        }
     }
 
     private void freeAllDestroyedActiveSprites() {

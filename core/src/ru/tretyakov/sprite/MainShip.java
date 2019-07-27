@@ -27,8 +27,8 @@ public class MainShip extends Ship {
         bulletRegion = atlas.findRegion("bulletMainShip");
         reloadInterval = 0.2f;
         laser = Gdx.audio.newSound(Gdx.files.internal("sounds/laser.wav"));
-        direction = new Vector2();
-        speed = new Vector2(0.3f, 0f);
+        v = new Vector2();
+        v0 = new Vector2(0.3f, 0f);
         bulletV = new Vector2(0, 0.6f);
         bulletHeight = 0.01f;
         damage = 1;
@@ -44,7 +44,12 @@ public class MainShip extends Ship {
 
     @Override
     public void update(float delta) {
-        super.update(delta);
+        pos.mulAdd(v, delta);
+        reloadTimer += delta;
+        if (reloadTimer >= reloadInterval) {
+            reloadTimer = 0;
+            shoot();
+        }
         if (getRight() > worldBounds.getRight()) {
             setRight(worldBounds.getRight());
             stop();
@@ -130,14 +135,14 @@ public class MainShip extends Ship {
     }
 
     public void moveRight() {
-        direction.set(speed);
+        v.set(v0);
     }
 
     public void moveLeft() {
-        direction.set(speed).rotate(180);
+        v.set(v0).rotate(180);
     }
 
     public void stop() {
-        direction.setZero();
+        v.setZero();
     }
 }
