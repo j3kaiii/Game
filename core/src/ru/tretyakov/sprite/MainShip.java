@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 import ru.tretyakov.base.Ship;
 import ru.tretyakov.math.Rect;
 import ru.tretyakov.pool.BulletPool;
+import ru.tretyakov.screen.GameScreen;
 
 public class MainShip extends Ship {
 

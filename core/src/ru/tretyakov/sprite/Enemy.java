@@ -48,7 +48,7 @@ public class Enemy extends Ship {
                 }
                 break;
         }
-        if (hp < 0) destroy();
+        //if (hp < 0) destroy();
     }
 
     public void set(TextureRegion[] regions,

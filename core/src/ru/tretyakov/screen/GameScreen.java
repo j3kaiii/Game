@@ -111,9 +111,11 @@ public class GameScreen extends BaseScreen {
                 } else if (bullets.get(j).getOwner() == mainShip && !bullets.get(j).isOutside(enemies.get(i))) {
                     enemies.get(i).setDamage(bullets.get(j));
                     bullets.get(j).destroy();
+                } else if (bullets.get(j).getOwner() == enemies.get(i) && !bullets.get(j).isOutside(mainShip)) {
+                    mainShip.setDamage(bullets.get(j));
+                    bullets.get(j).destroy();
                 }
             }
-
         }
     }
 

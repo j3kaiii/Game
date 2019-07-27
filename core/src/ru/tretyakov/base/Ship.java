@@ -53,6 +53,7 @@ public abstract class Ship extends Sprite {
 
     public void setDamage(Bullet bullet) {
         hp -= bullet.getDamage();
+        if (hp < 0) destroy();
         System.out.println(getClass().getName() + " hp " + hp);
     }
 }
