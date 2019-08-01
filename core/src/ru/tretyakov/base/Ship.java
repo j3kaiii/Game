@@ -6,7 +6,9 @@ import com.badlogic.gdx.math.Vector2;
 
 import ru.tretyakov.math.Rect;
 import ru.tretyakov.pool.BulletPool;
+import ru.tretyakov.pool.ExplosionsPool;
 import ru.tretyakov.sprite.Bullet;
+import ru.tretyakov.sprite.Explosion;
 
 public abstract class Ship extends Sprite {
 
@@ -22,6 +24,11 @@ public abstract class Ship extends Sprite {
     protected float reloadInterval;
     protected float reloadTimer;
     protected float bulletHeight;
+
+    private float damageAnimateInterval = 0.12f;
+    private float damageAnimateTimer = damageAnimateInterval;
+
+    protected ExplosionsPool explosionsPool;
 
     protected int damage;
     protected int hp;
@@ -47,13 +54,33 @@ public abstract class Ship extends Sprite {
     }
 
     @Override
+    public void update(float delta) {
+        damageAnimateTimer += delta;
+        if (damageAnimateTimer >= damageAnimateInterval) frame = 0;
+    }
+
+    @Override
     public void dispose() {
         laser.dispose();
     }
 
+    @Override
+    public void destroy() {
+        boom();
+        hp = 0;
+        super.destroy();
+    }
+
     public void setDamage(Bullet bullet) {
+        frame = 1;
+        damageAnimateTimer = 0f;
         hp -= bullet.getDamage();
-        if (hp < 0) destroy();
         System.out.println(getClass().getName() + " hp " + hp);
+        if (hp <= 0) destroy();
+    }
+
+    public void boom() {
+        Explosion explosion = explosionsPool.obtain();
+        explosion.set(getHeight(), pos);
     }
 }

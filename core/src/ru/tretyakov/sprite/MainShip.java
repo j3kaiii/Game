@@ -8,7 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 import ru.tretyakov.base.Ship;
 import ru.tretyakov.math.Rect;
 import ru.tretyakov.pool.BulletPool;
-import ru.tretyakov.screen.GameScreen;
+import ru.tretyakov.pool.ExplosionsPool;
 
 public class MainShip extends Ship {
 
@@ -22,9 +22,10 @@ public class MainShip extends Ship {
 
 
 
-    public MainShip(TextureAtlas atlas, BulletPool bulletPool) {
+    public MainShip(TextureAtlas atlas, BulletPool bulletPool, ExplosionsPool explosionsPool) {
         super(atlas.findRegion("main_ship"), 1, 2, 2);
         this.bulletPool = bulletPool;
+        this.explosionsPool = explosionsPool;
         bulletRegion = atlas.findRegion("bulletMainShip");
         reloadInterval = 0.2f;
         laser = Gdx.audio.newSound(Gdx.files.internal("sounds/laser.wav"));
@@ -45,6 +46,7 @@ public class MainShip extends Ship {
 
     @Override
     public void update(float delta) {
+        super.update(delta);
         pos.mulAdd(v, delta);
         reloadTimer += delta;
         if (reloadTimer >= reloadInterval) {
@@ -59,6 +61,19 @@ public class MainShip extends Ship {
             setLeft(worldBounds.getLeft());
             stop();
         }
+    }
+
+    public boolean isBulletCollision(Rect bullet) {
+        return ! (
+                bullet.getLeft() > getRight()
+                        || bullet.getRight() < getLeft()
+                        || bullet.getBottom() > pos.y
+                        || bullet.getTop() < getBottom()
+        );
+    }
+
+    public void reset() {
+        this.hp = 10;
     }
 
     public boolean keyDown(int keycode) {

@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 import ru.tretyakov.base.Ship;
 import ru.tretyakov.math.Rect;
 import ru.tretyakov.pool.BulletPool;
+import ru.tretyakov.pool.ExplosionsPool;
 
 public class Enemy extends Ship {
 
@@ -17,9 +18,10 @@ public class Enemy extends Ship {
 
     private MainShip mainShip;
 
-    public Enemy(BulletPool bulletPool, Rect worldBounds) {
+    public Enemy(BulletPool bulletPool, ExplosionsPool explosionsPool, Rect worldBounds) {
         this.bulletPool = bulletPool;
         this.worldBounds = worldBounds;
+        this.explosionsPool = explosionsPool;
         laser = Gdx.audio.newSound(Gdx.files.internal("sounds/bullet.wav"));
         v = new Vector2();
         v0 = new Vector2();
@@ -29,6 +31,7 @@ public class Enemy extends Ship {
 
     @Override
     public void update(float delta) {
+        super.update(delta);
         pos.mulAdd(v, delta);
         switch (state) {
             case DESCENT:
@@ -72,5 +75,14 @@ public class Enemy extends Ship {
         v.set(descentV);
         reloadTimer = reloadInterval;
         state = State.DESCENT;
+    }
+
+    public boolean isBulletCollision(Rect bullet) {
+        return ! (
+                bullet.getLeft() > getRight()
+                || bullet.getRight() < getLeft()
+                || bullet.getBottom() > getTop()
+                || bullet.getTop() < pos.y
+                );
     }
 }
