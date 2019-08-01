@@ -91,6 +91,7 @@ public class GameScreen extends BaseScreen {
     @Override
     public void resize(Rect worldBounds) {
         super.resize(worldBounds);
+        gameOverSprite.resize(worldBounds);
         background.resize(worldBounds);
         this.worldBounds = worldBounds;
         for (Star s : starArray) {
@@ -114,6 +115,7 @@ public class GameScreen extends BaseScreen {
     @Override
     public void dispose() {
         mainShip.dispose();
+        gameOverSprite.dispose();
         music.dispose();
         explosionSound.dispose();
         atlas.dispose();
@@ -193,9 +195,10 @@ public class GameScreen extends BaseScreen {
             enemyPool.drawActiveSprites(batch);
             mainShip.draw(batch);
         }
-        if (state == State.GAME_OVER) {
+        //if (state == State.GAME_OVER) {
+           // System.out.println("тест draw - " + state);
             gameOverSprite.draw(batch);
-        }
+       // }
         batch.end();
     }
 

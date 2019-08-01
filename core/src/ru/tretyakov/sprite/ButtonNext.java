@@ -10,6 +10,7 @@ public class ButtonNext extends ScaledTouchUpButtons {
 
     public ButtonNext(TextureAtlas atlas, MainShip mainShip) {
         super(atlas.findRegion("button_new_game"));
+        this.mainShip = mainShip;
     }
 
     @Override
