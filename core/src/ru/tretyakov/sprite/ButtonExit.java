@@ -2,7 +2,6 @@ package ru.tretyakov.sprite;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 import ru.tretyakov.base.ScaledTouchUpButtons;
 import ru.tretyakov.math.Rect;

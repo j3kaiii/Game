@@ -12,6 +12,7 @@ import ru.tretyakov.pool.ExplosionsPool;
 
 public class MainShip extends Ship {
 
+    private static final int HP = 100;
     private static final int INVALID_POINTER = -1;
     private int leftPointer = INVALID_POINTER;
     private int rightPointer = INVALID_POINTER;
@@ -34,7 +35,7 @@ public class MainShip extends Ship {
         bulletV = new Vector2(0, 0.6f);
         bulletHeight = 0.01f;
         damage = 1;
-        hp = 10;
+        hp = HP;
     }
 
     @Override
@@ -73,7 +74,18 @@ public class MainShip extends Ship {
     }
 
     public void reset() {
-        this.hp = 10;
+        setHp();
+        pos.x = worldBounds.pos.x;
+        stop();
+        pressedRight = false;
+        pressedLeft = false;
+        leftPointer = INVALID_POINTER;
+        rightPointer = INVALID_POINTER;
+        flushDestroy();
+    }
+
+    public void setHp() {
+        hp += HP / 2;
     }
 
     public boolean keyDown(int keycode) {

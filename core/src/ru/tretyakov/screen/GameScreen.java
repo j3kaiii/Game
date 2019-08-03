@@ -4,21 +4,25 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Align;
 
 import java.util.List;
 
 import ru.tretyakov.base.BaseScreen;
+import ru.tretyakov.base.Font;
 import ru.tretyakov.math.Rect;
 import ru.tretyakov.pool.BulletPool;
 import ru.tretyakov.pool.EnemyPool;
 import ru.tretyakov.pool.ExplosionsPool;
 import ru.tretyakov.sprite.Background;
 import ru.tretyakov.sprite.Bullet;
+import ru.tretyakov.sprite.ButtonExit;
 import ru.tretyakov.sprite.ButtonNext;
 import ru.tretyakov.sprite.Enemy;
 import ru.tretyakov.sprite.GameOverSprite;
@@ -30,6 +34,9 @@ public class GameScreen extends BaseScreen {
 
     private ButtonNext buttonNext;
 
+    private static final String FRAGS = "Frags: ";
+    private static final String HP = "HP: ";
+    private static final String LEVEL = "Level: ";
     private static final int STAR_COUNT = 64;
 
     private TextureAtlas atlas;
@@ -37,6 +44,7 @@ public class GameScreen extends BaseScreen {
     private Background background;
     private GameOverSprite gameOverSprite;
 
+    //private ButtonExit buttonExit;
 
     private BulletPool bulletPool;
     private EnemyPool enemyPool;
@@ -47,6 +55,13 @@ public class GameScreen extends BaseScreen {
     private MainShip mainShip;
     private Music music;
     private Sound explosionSound;
+
+    private Font font;
+    private StringBuilder sbFrags;
+    private StringBuilder sbHp;
+    private StringBuilder sbLevel;
+    private int frags;
+    private int level;
 
     private enum State {PLAYING, PAUSE, GAME_OVER}
     State state;
@@ -75,8 +90,17 @@ public class GameScreen extends BaseScreen {
         state = State.PLAYING;
         stateBuff = State.PLAYING;
 
-        buttonNext = new ButtonNext(atlas, mainShip);
+        buttonNext = new ButtonNext(atlas, this);
         gameOverSprite = new GameOverSprite(atlas);
+        //buttonExit = new ButtonExit(atlas);
+
+        font = new Font("font/font.fnt", "font/font.png");
+        font.setSize(0.02f);
+        font.setColor(Color.RED);
+        sbFrags = new StringBuilder();
+        sbHp = new StringBuilder();
+        sbLevel = new StringBuilder();
+        level = 0;
     }
 
     @Override
@@ -91,7 +115,9 @@ public class GameScreen extends BaseScreen {
     @Override
     public void resize(Rect worldBounds) {
         super.resize(worldBounds);
+        buttonNext.resize(worldBounds);
         gameOverSprite.resize(worldBounds);
+        //buttonExit.resize(worldBounds);
         background.resize(worldBounds);
         this.worldBounds = worldBounds;
         for (Star s : starArray) {
@@ -137,7 +163,11 @@ public class GameScreen extends BaseScreen {
             bulletPool.updateActiveSprites(delta);
             enemyPool.updateActiveSprites(delta);
             mainShip.update(delta);
-            enemyGenerator.generate(delta);
+            enemyGenerator.generate(delta, frags);
+            if (level != enemyGenerator.getLevel()) {
+                mainShip.setHp();
+                level = enemyGenerator.getLevel();
+            }
         }
     }
 
@@ -169,6 +199,7 @@ public class GameScreen extends BaseScreen {
                     if (enemy.isBulletCollision(bullet)) {
                         enemy.setDamage(bullet);
                         bullet.destroy();
+                        if (enemy.isDestroyed()) frags++;
                     }
                 }
             }
@@ -190,16 +221,29 @@ public class GameScreen extends BaseScreen {
             s.draw(batch);
         }
         explosionsPool.drawActiveSprites(batch);
-        if (state == State.PLAYING || (state == State.PAUSE && stateBuff != State.GAME_OVER)) {
-            bulletPool.drawActiveSprites(batch);
-            enemyPool.drawActiveSprites(batch);
-            mainShip.draw(batch);
+        switch (state) {
+            case PLAYING:
+                drawObjects();
+                break;
+            case PAUSE:
+                if (stateBuff != State.GAME_OVER) {
+                    drawObjects();
+                }
+                break;
+            case GAME_OVER:
+                gameOverSprite.draw(batch);
+                buttonNext.draw(batch);
+                //buttonExit.draw(batch);
+                break;
         }
-        //if (state == State.GAME_OVER) {
-           // System.out.println("тест draw - " + state);
-            gameOverSprite.draw(batch);
-       // }
         batch.end();
+    }
+
+    private void drawObjects() {
+        bulletPool.drawActiveSprites(batch);
+        enemyPool.drawActiveSprites(batch);
+        mainShip.draw(batch);
+        printInfo();
     }
 
     @Override
@@ -216,6 +260,24 @@ public class GameScreen extends BaseScreen {
         return false;
     }
 
+    public void resetGame() {
+        state = State.PLAYING;
+        bulletPool.freeAllActiveObjects();
+        enemyPool.freeAllActiveObjects();
+        explosionsPool.freeAllActiveObjects();
+        mainShip.reset();
+        frags = 0;
+    }
+
+    private void printInfo() {
+        sbFrags.setLength(0);
+        sbHp.setLength(0);
+        sbLevel.setLength(0);
+        font.draw(batch, sbFrags.append(FRAGS).append(frags), worldBounds.getLeft() + 0.02f, worldBounds.getTop() - 0.01f);
+        font.draw(batch, sbHp.append(HP).append(mainShip.getHp()), worldBounds.pos.x, worldBounds.getTop() - 0.01f, Align.center);
+        font.draw(batch, sbLevel.append(LEVEL).append(enemyGenerator.getLevel()), worldBounds.getRight() - 0.02f, worldBounds.getTop() - 0.01f, Align.right);
+    }
+
     @Override
     public boolean keyUp(int keycode) {
         if (state == State.GAME_OVER) return false;
@@ -225,14 +287,22 @@ public class GameScreen extends BaseScreen {
 
     @Override
     public boolean touchDown(Vector2 touch, int pointer, int button) {
-        if (state == State.GAME_OVER) return false;
+        if (state == State.GAME_OVER) {
+            //buttonExit.touchDown(touch, pointer, button);
+            buttonNext.touchDown(touch, pointer, button);
+            return false;
+        }
         mainShip.touchDown(touch, pointer, button);
         return false;
     }
 
     @Override
     public boolean touchUp(Vector2 touch, int pointer, int button) {
-        if (state == State.GAME_OVER) return false;
+        if (state == State.GAME_OVER) {
+            //buttonExit.touchUp(touch, pointer,button);
+            buttonNext.touchUp(touch, pointer, button);
+            return false;
+        }
         mainShip.touchUp(touch, pointer, button);
         return false;
     }

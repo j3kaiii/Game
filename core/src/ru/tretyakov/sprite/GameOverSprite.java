@@ -13,8 +13,8 @@ public class GameOverSprite extends Sprite {
 
     @Override
     public void resize(Rect worldBounds) {
-        setHeightProportion(0.8f);
-        setRight(worldBounds.getHalfWidth() - getHalfWidth());
-        setBottom(worldBounds.getHalfHeight() - getHalfHeight());
+        super.resize(worldBounds);
+        setHeightProportion(0.08f);
+        setBottom(0.009f);
     }
 }
